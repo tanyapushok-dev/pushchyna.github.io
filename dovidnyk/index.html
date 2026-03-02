@@ -53,13 +53,12 @@
 	</script>
 	
 	
-<!-- Скрипт для запам'ятовування останньої сторінки (localStorage) -->
+<!-- Скрипт для запам'ятовування останньої сторінки (фінальна версія) -->
 <script>
 (function() {
-    // Назва ключа в localStorage
     const STORAGE_KEY = 'flipbook_last_page';
 
-    // Функція для збереження номера сторінки
+    // Збереження номера сторінки
     function savePageNumber(page) {
         if (page !== undefined && page !== null) {
             localStorage.setItem(STORAGE_KEY, page);
@@ -67,134 +66,72 @@
         }
     }
 
-    // Функція для відновлення сторінки
+    // Відновлення сторінки при завантаженні
     function restorePageNumber(flipbookInstance) {
         const savedPage = localStorage.getItem(STORAGE_KEY);
-        if (savedPage && flipbookInstance) {
-            const pageNum = parseInt(savedPage);
-            console.log('Відновлюємо сторінку:', pageNum);
-            
-            // Перебираємо всі можливі методи переходу до сторінки
-            if (typeof flipbookInstance.gotoPage === 'function') {
-                flipbookInstance.gotoPage(pageNum);
-            } else if (typeof flipbookInstance.goToPage === 'function') {
-                flipbookInstance.goToPage(pageNum);
-            } else if (typeof flipbookInstance.jumpToPage === 'function') {
-                flipbookInstance.jumpToPage(pageNum);
-            } else if (typeof flipbookInstance.flipToPage === 'function') {
-                flipbookInstance.flipToPage(pageNum);
-            } else if (typeof flipbookInstance.showPage === 'function') {
-                flipbookInstance.showPage(pageNum);
-            } else if (typeof flipbookInstance.page === 'function') {
-                flipbookInstance.page(pageNum);
-            } else if (flipbookInstance.currentPage !== undefined) {
-                // Якщо немає функції, але є властивість currentPage
-                flipbookInstance.currentPage = pageNum;
-                // Можливо, потрібно оновити відображення
-                if (typeof flipbookInstance.render === 'function') {
-                    flipbookInstance.render();
-                }
-            } else {
-                console.warn('Не вдалося знайти метод для переходу до сторінки');
-            }
+        if (!savedPage || !flipbookInstance) return;
+        
+        const pageNum = parseInt(savedPage);
+        console.log('Відновлюємо сторінку:', pageNum);
+        
+        // Використовуємо перевірений метод gotoPage
+        if (typeof flipbookInstance.gotoPage === 'function') {
+            flipbookInstance.gotoPage(pageNum);
+        } else {
+            console.warn('Метод gotoPage не знайдено!');
         }
     }
 
-    // Функція для пошуку об'єкта фліпбука
+    // Пошук об'єкта фліпбука
     function findFlipbook() {
-        // Спочатку перевіряємо найпоширеніші глобальні змінні
-        const possibleGlobals = ['flipbook', 'book', 'theFlipBook', 'flipBook', 'FlipBook', 'fp', 'reader'];
-        for (let name of possibleGlobals) {
-            if (window[name] && typeof window[name] === 'object') {
-                console.log('Знайдено глобальний об\'єкт:', name);
-                return window[name];
-            }
-        }
-
-        // Якщо глобально не знайшли, шукаємо через jQuery (якщо є)
-        if (window.jQuery) {
-            // Можливо, фліпбук збережений у даних елемента
-            const $flipElement = $('#flipbook, .flipbook, [class*="flip"], [id*="flip"]').first();
-            if ($flipElement.length) {
-                const data = $flipElement.data();
-                for (let key in data) {
-                    if (data[key] && typeof data[key] === 'object' && 
-                        (key.toLowerCase().includes('flip') || key.toLowerCase().includes('book'))) {
-                        console.log('Знайдено через jQuery data:', key);
-                        return data[key];
-                    }
-                }
-            }
-        }
-
+        // Ваш фліпбук зберігається в глобальній змінній flipBook
+        if (window.flipBook) return window.flipBook;
+        // Запасні варіанти (на всяк випадок)
+        if (window.flipbook) return window.flipbook;
+        if (window.theFlipBook) return window.theFlipBook;
+        if (window.book) return window.book;
         return null;
     }
 
-    // Основний код: чекаємо появи фліпбука
+    // Чекаємо появи об'єкта flipBook
     let attempts = 0;
-    const maxAttempts = 50; // 10 секунд (50 * 200ms)
+    const maxAttempts = 50; // 10 секунд (50 * 200 мс)
     const interval = setInterval(function() {
         const fb = findFlipbook();
         if (fb) {
             clearInterval(interval);
-            console.log('Фліпбук знайдено, ініціалізація...');
+            console.log('✅ Фліпбук знайдено, ініціалізація...');
             
-            // Відновлюємо сторінку при завантаженні
+            // Відновлюємо сторінку
             restorePageNumber(fb);
             
-            // Намагаємось відстежувати зміну сторінки
-            // Варіант 1: події
-            if (fb.on && typeof fb.on === 'function') {
-                fb.on('pageChanged', savePageNumber);
-                fb.on('pageChange', savePageNumber);
-                fb.on('change', savePageNumber);
-                fb.on('flip', savePageNumber);
-            }
-            
-            // Варіант 2: опитування (якщо подій немає)
+            // Відстежуємо зміну сторінки (зберігаємо нову позицію)
             let lastPage = null;
             setInterval(function() {
-                let currentPage = null;
-                if (fb.getCurrentPage) {
-                    currentPage = fb.getCurrentPage();
-                } else if (fb.currentPage !== undefined) {
-                    currentPage = fb.currentPage;
-                } else if (fb.page !== undefined) {
-                    currentPage = fb.page;
-                } else if (fb.getPage) {
-                    currentPage = fb.getPage();
-                } else {
-                    // Спробуємо знайти номер сторінки в DOM (часто десь відображається)
-                    const pageSpan = $('.page-number, .current-page, .page-indicator').first().text();
-                    const match = pageSpan.match(/\d+/);
-                    if (match) currentPage = parseInt(match[0]);
-                }
-                
-                if (currentPage && currentPage !== lastPage) {
+                // Отримуємо поточну сторінку з currentPageIndex
+                let currentPage = fb.currentPageIndex;
+                if (currentPage !== undefined && currentPage !== lastPage) {
                     lastPage = currentPage;
                     savePageNumber(currentPage);
                 }
-            }, 1000);
+            }, 1000); // перевіряємо щосекунди
             
-            // Зберігаємо при закритті
+            // Додатково зберігаємо при закритті вкладки
             window.addEventListener('beforeunload', function() {
-                let finalPage = null;
-                if (fb.getCurrentPage) finalPage = fb.getCurrentPage();
-                else if (fb.currentPage !== undefined) finalPage = fb.currentPage;
-                else if (fb.page !== undefined) finalPage = fb.page;
-                
-                if (finalPage) savePageNumber(finalPage);
+                if (fb.currentPageIndex !== undefined) {
+                    savePageNumber(fb.currentPageIndex);
+                }
             });
         }
         
         attempts++;
         if (attempts >= maxAttempts) {
             clearInterval(interval);
-            console.warn('Не вдалося знайти об\'єкт фліпбука після', maxAttempts, 'спроб');
+            console.warn('❌ Не вдалося знайти об\'єкт фліпбука після', maxAttempts, 'спроб');
         }
     }, 200);
 })();
-</script>	
+</script>
   <noscript><div><hr/><ul><li><a href="files/basic-html/page1.html">Pages</a></li></ul><hr style="width:80%"/></div></noscript>
       
 </body>
