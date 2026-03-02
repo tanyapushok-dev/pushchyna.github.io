@@ -53,115 +53,148 @@
 	</script>
 	
 	
-	<!-- Скрипт для запам'ятовування останньої сторінки -->
-	<script>
-	(function() {
-		// Функція пошуку об'єкта фліпбука (перевіряє найпоширеніші глобальні змінні)
-		function getFlipbook() {
-			return window.flipbook || window.theFlipBook || window.flipBook || window.FlipBook || window.book;
-		}
+<!-- Скрипт для запам'ятовування останньої сторінки (localStorage) -->
+<script>
+(function() {
+    // Назва ключа в localStorage
+    const STORAGE_KEY = 'flipbook_last_page';
 
-		// Збереження сторінки в localStorage
-		function savePage(page) {
-			if (page !== undefined && page !== null) {
-				localStorage.setItem('flipbookPage', page);
-			}
-		}
+    // Функція для збереження номера сторінки
+    function savePageNumber(page) {
+        if (page !== undefined && page !== null) {
+            localStorage.setItem(STORAGE_KEY, page);
+            console.log('Збережено сторінку:', page);
+        }
+    }
 
-		// Відновлення сторінки
-		function restorePage(flipbook) {
-			var savedPage = localStorage.getItem('flipbookPage');
-			if (savedPage) {
-				savedPage = parseInt(savedPage);
-				// Перебираємо можливі назви методів переходу до сторінки
-				if (flipbook.goToPage) {
-					flipbook.goToPage(savedPage);
-				} else if (flipbook.jumpToPage) {
-					flipbook.jumpToPage(savedPage);
-				} else if (flipbook.flipToPage) {
-					flipbook.flipToPage(savedPage);
-				} else if (flipbook.showPage) {
-					flipbook.showPage(savedPage);
-				} else if (flipbook.gotoPage) {
-					flipbook.gotoPage(savedPage);
-				} else if (flipbook.page && typeof flipbook.page === 'function') {
-					flipbook.page(savedPage);
-				} else {
-					console.warn("Не вдалося знайти метод для переходу до сторінки");
-				}
-			}
-		}
+    // Функція для відновлення сторінки
+    function restorePageNumber(flipbookInstance) {
+        const savedPage = localStorage.getItem(STORAGE_KEY);
+        if (savedPage && flipbookInstance) {
+            const pageNum = parseInt(savedPage);
+            console.log('Відновлюємо сторінку:', pageNum);
+            
+            // Перебираємо всі можливі методи переходу до сторінки
+            if (typeof flipbookInstance.gotoPage === 'function') {
+                flipbookInstance.gotoPage(pageNum);
+            } else if (typeof flipbookInstance.goToPage === 'function') {
+                flipbookInstance.goToPage(pageNum);
+            } else if (typeof flipbookInstance.jumpToPage === 'function') {
+                flipbookInstance.jumpToPage(pageNum);
+            } else if (typeof flipbookInstance.flipToPage === 'function') {
+                flipbookInstance.flipToPage(pageNum);
+            } else if (typeof flipbookInstance.showPage === 'function') {
+                flipbookInstance.showPage(pageNum);
+            } else if (typeof flipbookInstance.page === 'function') {
+                flipbookInstance.page(pageNum);
+            } else if (flipbookInstance.currentPage !== undefined) {
+                // Якщо немає функції, але є властивість currentPage
+                flipbookInstance.currentPage = pageNum;
+                // Можливо, потрібно оновити відображення
+                if (typeof flipbookInstance.render === 'function') {
+                    flipbookInstance.render();
+                }
+            } else {
+                console.warn('Не вдалося знайти метод для переходу до сторінки');
+            }
+        }
+    }
 
-		// Ініціалізація: відновлення сторінки та підписка на події
-		function init(flipbook) {
-			if (!flipbook) return;
-			restorePage(flipbook);
+    // Функція для пошуку об'єкта фліпбука
+    function findFlipbook() {
+        // Спочатку перевіряємо найпоширеніші глобальні змінні
+        const possibleGlobals = ['flipbook', 'book', 'theFlipBook', 'flipBook', 'FlipBook', 'fp', 'reader'];
+        for (let name of possibleGlobals) {
+            if (window[name] && typeof window[name] === 'object') {
+                console.log('Знайдено глобальний об\'єкт:', name);
+                return window[name];
+            }
+        }
 
-			// Спроба підписатися на подію зміни сторінки (якщо підтримується)
-			if (flipbook.on && typeof flipbook.on === 'function') {
-				flipbook.on('pageChange', function(page) {
-					savePage(page);
-				});
-				flipbook.on('change', function(page) {
-					savePage(page);
-				});
-				flipbook.on('pageChanged', function(page) {
-					savePage(page);
-				});
-			} else {
-				// Якщо подій немає – опитуємо стан щосекунди
-				var currentPage = null;
-				setInterval(function() {
-					var page = null;
-					if (flipbook.getCurrentPage) {
-						page = flipbook.getCurrentPage();
-					} else if (flipbook.currentPage) {
-						page = flipbook.currentPage;
-					} else if (flipbook.page) {
-						page = flipbook.page;
-					} else if (flipbook.getPage) {
-						page = flipbook.getPage();
-					}
-					if (page && page !== currentPage) {
-						currentPage = page;
-						savePage(page);
-					}
-				}, 1000);
-			}
+        // Якщо глобально не знайшли, шукаємо через jQuery (якщо є)
+        if (window.jQuery) {
+            // Можливо, фліпбук збережений у даних елемента
+            const $flipElement = $('#flipbook, .flipbook, [class*="flip"], [id*="flip"]').first();
+            if ($flipElement.length) {
+                const data = $flipElement.data();
+                for (let key in data) {
+                    if (data[key] && typeof data[key] === 'object' && 
+                        (key.toLowerCase().includes('flip') || key.toLowerCase().includes('book'))) {
+                        console.log('Знайдено через jQuery data:', key);
+                        return data[key];
+                    }
+                }
+            }
+        }
 
-			// Збереження при закритті вкладки
-			window.addEventListener('beforeunload', function() {
-				var page = null;
-				if (flipbook.getCurrentPage) {
-					page = flipbook.getCurrentPage();
-				} else if (flipbook.currentPage) {
-					page = flipbook.currentPage;
-				} else if (flipbook.page) {
-					page = flipbook.page;
-				} else if (flipbook.getPage) {
-					page = flipbook.getPage();
-				}
-				if (page) savePage(page);
-			});
-		}
+        return null;
+    }
 
-		// Чекаємо появи об'єкта flipbook (перевіряємо кожні 200 мс)
-		var checkInterval = setInterval(function() {
-			var fb = getFlipbook();
-			if (fb) {
-				clearInterval(checkInterval);
-				init(fb);
-			}
-		}, 200);
-
-		// Додатково після повного завантаження сторінки
-		window.addEventListener('load', function() {
-			var fb = getFlipbook();
-			if (fb) init(fb);
-		});
-	})();
-	</script>
-	
+    // Основний код: чекаємо появи фліпбука
+    let attempts = 0;
+    const maxAttempts = 50; // 10 секунд (50 * 200ms)
+    const interval = setInterval(function() {
+        const fb = findFlipbook();
+        if (fb) {
+            clearInterval(interval);
+            console.log('Фліпбук знайдено, ініціалізація...');
+            
+            // Відновлюємо сторінку при завантаженні
+            restorePageNumber(fb);
+            
+            // Намагаємось відстежувати зміну сторінки
+            // Варіант 1: події
+            if (fb.on && typeof fb.on === 'function') {
+                fb.on('pageChanged', savePageNumber);
+                fb.on('pageChange', savePageNumber);
+                fb.on('change', savePageNumber);
+                fb.on('flip', savePageNumber);
+            }
+            
+            // Варіант 2: опитування (якщо подій немає)
+            let lastPage = null;
+            setInterval(function() {
+                let currentPage = null;
+                if (fb.getCurrentPage) {
+                    currentPage = fb.getCurrentPage();
+                } else if (fb.currentPage !== undefined) {
+                    currentPage = fb.currentPage;
+                } else if (fb.page !== undefined) {
+                    currentPage = fb.page;
+                } else if (fb.getPage) {
+                    currentPage = fb.getPage();
+                } else {
+                    // Спробуємо знайти номер сторінки в DOM (часто десь відображається)
+                    const pageSpan = $('.page-number, .current-page, .page-indicator').first().text();
+                    const match = pageSpan.match(/\d+/);
+                    if (match) currentPage = parseInt(match[0]);
+                }
+                
+                if (currentPage && currentPage !== lastPage) {
+                    lastPage = currentPage;
+                    savePageNumber(currentPage);
+                }
+            }, 1000);
+            
+            // Зберігаємо при закритті
+            window.addEventListener('beforeunload', function() {
+                let finalPage = null;
+                if (fb.getCurrentPage) finalPage = fb.getCurrentPage();
+                else if (fb.currentPage !== undefined) finalPage = fb.currentPage;
+                else if (fb.page !== undefined) finalPage = fb.page;
+                
+                if (finalPage) savePageNumber(finalPage);
+            });
+        }
+        
+        attempts++;
+        if (attempts >= maxAttempts) {
+            clearInterval(interval);
+            console.warn('Не вдалося знайти об\'єкт фліпбука після', maxAttempts, 'спроб');
+        }
+    }, 200);
+})();
+</script>	
   <noscript><div><hr/><ul><li><a href="files/basic-html/page1.html">Pages</a></li></ul><hr style="width:80%"/></div></noscript>
       
 </body>
