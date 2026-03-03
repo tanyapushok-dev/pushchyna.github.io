@@ -58,31 +58,40 @@
   <noscript><div><hr/><ul><li><a href="files/basic-html/page1.html">Pages</a></li></ul><hr style="width:80%"/></div></noscript>
 
   
-  <!-- №2 -->
+  <!-- №3 -->
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
-    setTimeout(function () {
-
+    function getPageFromHash() {
         const match = window.location.hash.match(/#p=(\d+)/);
-        if (match) {
-            localStorage.setItem("flip_last_page", match[1]);
-        } else {
-            const saved = localStorage.getItem("flip_last_page");
-            if (saved) {
-                window.location.hash = "p=" + saved;
-            }
+        return match ? match[1] : null;
+    }
+
+    function saveCurrentPage() {
+        const page = getPageFromHash();
+        if (page) {
+            localStorage.setItem("flip_last_page", page);
         }
+    }
 
-        window.addEventListener("hashchange", function () {
-            const m = window.location.hash.match(/#p=(\d+)/);
-            if (m) {
-                localStorage.setItem("flip_last_page", m[1]);
-            }
-        });
+    function restorePageAfterInit() {
+        const saved = localStorage.getItem("flip_last_page");
+        const current = getPageFromHash();
 
-    }, 1000);
+        // якщо книга сама поставила #p=1, а ми маємо збережену іншу сторінку
+        if (saved && current === "1") {
+            window.location.hash = "p=" + saved;
+        }
+    }
+
+    // зберігати сторінку при кожній зміні
+    window.addEventListener("hashchange", saveCurrentPage);
+
+    // чекати повного завантаження всіх ресурсів
+    window.addEventListener("load", function () {
+        setTimeout(restorePageAfterInit, 1500);
+    });
 
 });
 </script>
