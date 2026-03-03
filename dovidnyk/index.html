@@ -55,7 +55,7 @@
 	  <noscript><div><hr/><ul><li><a href="files/basic-html/page1.html">Pages</a></li></ul><hr style="width:80%"/></div></noscript>
       
 <!-- Фінальний скрипт для мобільних (з агресивним відстеженням) -->
-<script>
+script>
 (function() {
     const STORAGE_KEY = 'flipbook_last_page';
     let flipbookInstance = null;
@@ -173,6 +173,135 @@
             window.addEventListener('beforeunload', () => {
                 const finalPage = getCurrentPage(fb);
                 if (finalPage) savePageNumber(finalPage);
+            });
+        }
+
+        attempts++;
+        if (attempts >= maxAttempts) {
+            clearInterval(interval);
+            console.warn('❌ Фліпбук не знайдено на мобільному');
+        }
+    }, 200);
+})();
+/script>
+
+<!-- Фінальний скрипт із прямим доступом до flipPageManager -->
+<script>
+(function() {
+    const STORAGE_KEY = 'flipbook_last_page';
+    let flipbookInstance = null;
+
+    function savePageNumber(page) {
+        if (page === undefined || page === null) return;
+        try {
+            localStorage.setItem(STORAGE_KEY, page);
+            console.log('📌 Збережено сторінку:', page);
+        } catch(e) {}
+    }
+
+    function getCurrentPage(flipbook) {
+        if (!flipbook) return null;
+        // Перевіряємо різні джерела
+        if (flipbook.currentPageIndex !== undefined) return flipbook.currentPageIndex;
+        if (flipbook.pageIndex !== undefined) return flipbook.pageIndex;
+        if (flipbook.currentPage !== undefined) return flipbook.currentPage;
+        if (flipbook.flipPageManager && flipbook.flipPageManager.currentPageIndex !== undefined) 
+            return flipbook.flipPageManager.currentPageIndex;
+        return null;
+    }
+
+    function restorePage(flipbook) {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (!saved) return;
+        const pageNum = parseInt(saved);
+        console.log('↩️ Відновлюємо сторінку:', pageNum);
+
+        // Методи для спроби (пріоритетні)
+        const attempts = [
+            // Прямі методи на flipBook
+            () => flipbook.gotoPage?.(pageNum),
+            () => flipbook.goToPage?.(pageNum),
+            () => flipbook.jumpToPage?.(pageNum),
+            () => flipbook.flipToPage?.(pageNum),
+            () => flipbook.showPage?.(pageNum),
+            () => flipbook.page?.(pageNum),
+            () => flipbook.turnToPage?.(pageNum),
+            () => flipbook.moveToPage?.(pageNum),
+            () => flipbook.setPage?.(pageNum),
+            // Методи на flipPageManager
+            () => flipbook.flipPageManager?.goToPage?.(pageNum),
+            () => flipbook.flipPageManager?.jumpToPage?.(pageNum),
+            () => flipbook.flipPageManager?.flipToPage?.(pageNum),
+            () => flipbook.flipPageManager?.showPage?.(pageNum),
+            () => flipbook.flipPageManager?.setPage?.(pageNum),
+            () => flipbook.flipPageManager?.turnToPage?.(pageNum),
+            () => flipbook.flipPageManager?.moveToPage?.(pageNum),
+            () => flipbook.flipPageManager?.flip?.(pageNum),
+            // Специфічні методи для мобільних
+            () => flipbook.flipPageManager?.goto?.(pageNum),
+            () => flipbook.flipPageManager?.to?.(pageNum),
+            () => flipbook.flipPageManager?.index?.(pageNum),
+            () => flipbook.flipPageManager?.page?.(pageNum),
+            // Спроба через options
+            () => {
+                if (flipbook.options) {
+                    flipbook.options.currentPageIndex = pageNum;
+                    flipbook.update?.();
+                }
+            }
+        ];
+
+        for (let attempt of attempts) {
+            try {
+                const result = attempt();
+                if (result !== false) {
+                    console.log('✅ Метод спрацював');
+                    return;
+                }
+            } catch(e) {}
+        }
+
+        console.warn('⚠️ Жоден метод не спрацював. Потрібен ручний пошук.');
+    }
+
+    function findFlipbook() {
+        return window.flipBook || window.flipbook || window.theFlipBook || window.book || null;
+    }
+
+    // Чекаємо появи flipBook
+    let attempts = 0;
+    const maxAttempts = 60;
+    const interval = setInterval(() => {
+        const fb = findFlipbook();
+        if (fb) {
+            clearInterval(interval);
+            flipbookInstance = fb;
+            console.log('✅ Фліпбук знайдено (мобільна версія)');
+
+            // Відновлюємо сторінку з затримкою
+            setTimeout(() => restorePage(fb), 500);
+
+            // Відстеження зміни сторінки
+            let lastPage = getCurrentPage(fb);
+            setInterval(() => {
+                const current = getCurrentPage(fb);
+                if (current !== null && current !== lastPage) {
+                    lastPage = current;
+                    savePageNumber(current);
+                }
+            }, 300);
+
+            // Події дотику
+            document.addEventListener('touchstart', () => {
+                setTimeout(() => {
+                    const page = getCurrentPage(fb);
+                    if (page) savePageNumber(page);
+                }, 300);
+            });
+
+            window.addEventListener('beforeunload', () => {
+                const final = getCurrentPage(fb);
+                if (final) savePageNumber(final);
             });
         }
 
