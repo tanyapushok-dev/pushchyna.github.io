@@ -56,7 +56,26 @@
 	
 	
   <noscript><div><hr/><ul><li><a href="files/basic-html/page1.html">Pages</a></li></ul><hr style="width:80%"/></div></noscript>
-      
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    // 1. Якщо в URL є сторінка — зберегти її
+    const params = new URLSearchParams(window.location.search);
+    const page = params.get("page");
+    if (page) {
+        localStorage.setItem("flip_last_page", page);
+    }
+
+    // 2. Якщо сторінки в URL немає — підставити збережену
+    const saved = localStorage.getItem("flip_last_page");
+    if (!page && saved) {
+        window.location.search = "#p=" + saved;
+    }
+
+});
+</script>
+	      
 </body>
 
 </html>
