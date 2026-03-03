@@ -9,13 +9,13 @@
 	<meta name="apple-mobile-web-app-capable" content="yes" />
 	<meta name="monitor-signature" content="monitor:player:html5">
 	<meta name="keywords" content="" />
-	<meta name="og:image" content="files/page/1.jpg" />
-	<meta property="og:image" content="files/page/1.jpg" />
+	<meta name="og:image" content="files/shot.png" />
+	<meta property="og:image" content="files/shot.png" />
 	<meta property="og:title" content="Церковний календар" />
-	<meta property="og:description" content="" />
-	<meta name="Description" content="">
-	<link rel="image_src" href="files/page/1.jpg" />
-	<meta name="Generator" content="FlipPDFPlusCorp for win v7.10.15 at https://www.flipbuilder.com" />
+	<meta property="og:description" content="Повний календар богослужінь, свят і постів ПЦУ з інтерактивною навігацією та текстовим пошуком." />
+	<meta name="Description" content="Повний календар богослужінь, свят і постів ПЦУ з інтерактивною навігацією та текстовим пошуком.">
+	<link rel="image_src" href="files/shot.png" />
+	<meta name="Generator" content="FlipPDFPlusCorp for win v7.11.9 at https://www.flipbuilder.com" />
 	<link rel="shortcut icon" href="files/extfile/htmlIcon.png" />
 	<meta name="robots" content="noindex,nofollow">
 	
@@ -37,8 +37,8 @@
   <script type="text/javascript" src="javascript/pageItems.min.js"></script>
   <script type="text/javascript" src="javascript/main.min.js"></script>
 
-  
-  
+  <script type="text/javascript" src="files/editor/files/config.js"></script>
+  <script type="text/javascript" src="files/editor/files/textSvgConfig.js"></script>
   <link rel="stylesheet" href="style/app.css">
                   <link rel="stylesheet" href="style/chunk-vendors.css">
                   <script type="text/javascript" src="javascript/app.js"></script>
@@ -56,84 +56,48 @@
 	
 	
   <noscript><div><hr/><ul><li><a href="files/basic-html/page1.html">Pages</a></li></ul><hr style="width:80%"/></div></noscript>
-      
-<!-- Скрипт для запам'ятовування останньої сторінки (фінальна версія) -->
+    
+
 <script>
 (function() {
-    const STORAGE_KEY = 'flipbook_last_page';
 
-    // Збереження номера сторінки
-    function savePageNumber(page) {
-        if (page !== undefined && page !== null) {
+    const STORAGE_KEY = "flip_last_page";
+
+    function getPageFromHash() {
+        const match = window.location.hash.match(/#p=(\d+)/);
+        return match ? match[1] : null;
+    }
+
+    function savePage() {
+        const page = getPageFromHash();
+        if (page && page !== "1") {
             localStorage.setItem(STORAGE_KEY, page);
-            console.log('Збережено сторінку:', page);
         }
     }
 
-    // Відновлення сторінки при завантаженні
-    function restorePageNumber(flipbookInstance) {
-        const savedPage = localStorage.getItem(STORAGE_KEY);
-        if (!savedPage || !flipbookInstance) return;
-        
-        const pageNum = parseInt(savedPage);
-        console.log('Відновлюємо сторінку:', pageNum);
-        
-        // Використовуємо перевірений метод gotoPage
-        if (typeof flipbookInstance.gotoPage === 'function') {
-            flipbookInstance.gotoPage(pageNum);
-        } else {
-            console.warn('Метод gotoPage не знайдено!');
+    function tryRestore() {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        const current = getPageFromHash();
+
+        if (saved && current === "1") {
+            window.location.hash = "p=" + saved;
         }
     }
 
-    // Пошук об'єкта фліпбука
-    function findFlipbook() {
-        // Ваш фліпбук зберігається в глобальній змінній flipBook
-        if (window.flipBook) return window.flipBook;
-        // Запасні варіанти (на всяк випадок)
-        if (window.flipbook) return window.flipbook;
-        if (window.theFlipBook) return window.theFlipBook;
-        if (window.book) return window.book;
-        return null;
-    }
+    // зберігати сторінку
+    window.addEventListener("hashchange", function() {
+        savePage();
+        tryRestore();
+    });
 
-    // Чекаємо появи об'єкта flipBook
+    // постійно перевіряти перші 5 секунд
     let attempts = 0;
-    const maxAttempts = 50; // 10 секунд (50 * 200 мс)
     const interval = setInterval(function() {
-        const fb = findFlipbook();
-        if (fb) {
-            clearInterval(interval);
-            console.log('✅ Фліпбук знайдено, ініціалізація...');
-            
-            // Відновлюємо сторінку
-            restorePageNumber(fb);
-            
-            // Відстежуємо зміну сторінки (зберігаємо нову позицію)
-            let lastPage = null;
-            setInterval(function() {
-                // Отримуємо поточну сторінку з currentPageIndex
-                let currentPage = fb.currentPageIndex;
-                if (currentPage !== undefined && currentPage !== lastPage) {
-                    lastPage = currentPage;
-                    savePageNumber(currentPage);
-                }
-            }, 1000); // перевіряємо щосекунди
-            
-            // Додатково зберігаємо при закритті вкладки
-            window.addEventListener('beforeunload', function() {
-                if (fb.currentPageIndex !== undefined) {
-                    savePageNumber(fb.currentPageIndex);
-                }
-            });
-        }
-        
+        tryRestore();
         attempts++;
-        if (attempts >= maxAttempts) {
-            clearInterval(interval);
-            console.warn('❌ Не вдалося знайти об\'єкт фліпбука після', maxAttempts, 'спроб');
-        }
-    }, 200);
+        if (attempts > 50) clearInterval(interval);
+    }, 100);
+
 })();
 </script>
 
