@@ -58,42 +58,49 @@
   <noscript><div><hr/><ul><li><a href="files/basic-html/page1.html">Pages</a></li></ul><hr style="width:80%"/></div></noscript>
 
   
-  <!--  №3  -->
+  <!--  №4  -->
 
 <script>
-document.addEventListener("DOMContentLoaded", function () {
+(function() {
+
+    const STORAGE_KEY = "flip_last_page";
 
     function getPageFromHash() {
         const match = window.location.hash.match(/#p=(\d+)/);
         return match ? match[1] : null;
     }
 
-    function saveCurrentPage() {
+    function savePage() {
         const page = getPageFromHash();
-        if (page) {
-            localStorage.setItem("flip_last_page", page);
+        if (page && page !== "1") {
+            localStorage.setItem(STORAGE_KEY, page);
         }
     }
 
-    function restorePageAfterInit() {
-        const saved = localStorage.getItem("flip_last_page");
+    function tryRestore() {
+        const saved = localStorage.getItem(STORAGE_KEY);
         const current = getPageFromHash();
 
-        // якщо книга сама поставила #p=1, а ми маємо збережену іншу сторінку
         if (saved && current === "1") {
             window.location.hash = "p=" + saved;
         }
     }
 
-    // зберігати сторінку при кожній зміні
-    window.addEventListener("hashchange", saveCurrentPage);
-
-    // чекати повного завантаження всіх ресурсів
-    window.addEventListener("load", function () {
-        setTimeout(restorePageAfterInit, 1500);
+    // зберігати сторінку
+    window.addEventListener("hashchange", function() {
+        savePage();
+        tryRestore();
     });
 
-});
+    // постійно перевіряти перші 5 секунд
+    let attempts = 0;
+    const interval = setInterval(function() {
+        tryRestore();
+        attempts++;
+        if (attempts > 50) clearInterval(interval);
+    }, 100);
+
+})();
 </script>
 	      
 </body>
