@@ -58,34 +58,31 @@
   <noscript><div><hr/><ul><li><a href="files/basic-html/page1.html">Pages</a></li></ul><hr style="width:80%"/></div></noscript>
 
   
-  <!-- №1 -->
+  <!-- №2 -->
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
-    // 1. Якщо в URL є #p=X — зберегти
-    function savePageFromHash() {
+    setTimeout(function () {
+
         const match = window.location.hash.match(/#p=(\d+)/);
         if (match) {
             localStorage.setItem("flip_last_page", match[1]);
-        }
-    }
-
-    // 2. Якщо hash відсутній — відновити
-    function restorePage() {
-        if (!window.location.hash) {
+        } else {
             const saved = localStorage.getItem("flip_last_page");
             if (saved) {
                 window.location.hash = "p=" + saved;
             }
         }
-    }
 
-    restorePage();
-    savePageFromHash();
+        window.addEventListener("hashchange", function () {
+            const m = window.location.hash.match(/#p=(\d+)/);
+            if (m) {
+                localStorage.setItem("flip_last_page", m[1]);
+            }
+        });
 
-    // 3. Слухати зміну сторінки
-    window.addEventListener("hashchange", savePageFromHash);
+    }, 1000);
 
 });
 </script>
