@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Колекція інструментів</title>
+<link rel="icon" href="https://images.emojiterra.com/microsoft/fluent-emoji/15.1/256px/1f387_flat.png">
+
+<style>
+:root {
+  --bg1: #0f172a;
+  --bg2: #1e293b;
+  --glass: rgba(255,255,255,0.06);
+  --border: rgba(255,255,255,0.12);
+  --text: #f8fafc;
+  --muted: #94a3b8;
+  --accent: #38bdf8;
+}
+
+body.light {
+  --bg1: #f1f5f9;
+  --bg2: #e2e8f0;
+  --glass: rgba(255,255,255,0.7);
+  --border: rgba(0,0,0,0.08);
+  --text: #0f172a;
+  --muted: #475569;
+  --accent: #2563eb;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, sans-serif;
+  background: linear-gradient(135deg, var(--bg1), var(--bg2));
+  color: var(--text);
+  min-height: 100vh;
+  transition: 0.3s ease;
+}
+
+header {
+  padding: 30px 20px 10px;
+  text-align: center;
+  position: relative;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 26px;
+  letter-spacing: 0.5px;
+}
+
+header p {
+  margin-top: 6px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.theme-toggle {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: var(--glass);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+  border-radius: 50px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.container {
+  max-width: 1200px;
+  margin: auto;
+  padding: 20px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.card {
+  background: var(--glass);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(18px);
+  border-radius: 20px;
+  padding: 24px;
+  text-decoration: none;
+  color: inherit;
+  transition: 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  width: 150%;
+  height: 150%;
+  background: radial-gradient(circle at top left, var(--accent), transparent 60%);
+  opacity: 0.08;
+  top: -50%;
+  left: -50%;
+  transition: 0.4s ease;
+}
+
+.card:hover {
+  transform: translateY(-6px);
+  border-color: var(--accent);
+}
+
+.card:hover::before {
+  opacity: 0.18;
+}
+
+.card h2 {
+  margin: 0 0 10px 0;
+  font-size: 18px;
+}
+
+.card p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.badge {
+  display: inline-block;
+  margin-top: 12px;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 50px;
+  background: var(--accent);
+  color: #fff;
+}
+
+footer {
+  text-align: center;
+  padding: 25px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+@media (max-width: 480px) {
+  header h1 { font-size: 20px; }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>🎇 Колекція інструментів</h1>
+  <p>Швидкий доступ до ваших інструментів</p>
+  <div class="theme-toggle" onclick="toggleTheme()">🌗 Тема</div>
+</header>
+
+<div class="container">
+  <div class="grid">
+
+    <a href="https://pushchyna.github.io/moon/" class="card">
+      <h2 style="display: flex;"><svg height="22px" width="22px" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 47.539 47.539" xml:space="preserve">
+<g>
+	<g>
+		<path style="fill:#a78bfa;" d="M24.997,47.511C11.214,47.511,0,36.298,0,22.515C0,12.969,5.314,4.392,13.869,0.132
+			c0.385-0.191,0.848-0.117,1.151,0.186s0.381,0.766,0.192,1.15C13.651,4.64,12.86,8.05,12.86,11.601
+			c0,12.681,10.316,22.997,22.997,22.997c3.59,0,7.033-0.809,10.236-2.403c0.386-0.191,0.848-0.117,1.151,0.186
+			c0.304,0.303,0.381,0.766,0.192,1.15C43.196,42.153,34.597,47.511,24.997,47.511z M12.248,3.372C5.862,7.608,2,14.709,2,22.515
+			c0,12.68,10.316,22.996,22.997,22.996c7.854,0,14.981-3.898,19.207-10.343c-2.668,0.95-5.464,1.43-8.346,1.43
+			c-13.783,0-24.997-11.214-24.997-24.997C10.861,8.761,11.327,6.005,12.248,3.372z"/>
+	</g>
+</g>
+</svg>&nbsp; Місячний календар</h2>
+      <p>Фази Місяця, місячний день, астродані.</p>
+      <!-- span class="badge">Основний</span -->
+    </a>
+
+    <a href="https://pushchyna.github.io/matrix_calculator/" class="card">
+      <h2 style="display: flex;"><svg version="1.2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 774 774" width="24" height="24">
+	<path fill="#a78bfa" id="Path 0" class="s0" d="m336.5 50l-50 50 57-0.01 43.51-43.49c170.1 170.11 219.83 219.5 220.24 219.5 0.41 0 0.75-12.49 0.75-27.75l-0.01-27.75c-170.88-170.89-220.72-220.5-220.99-220.5-0.28 0-23.01 22.5-50.5 50zm-226.49 226.5l-110.51 110.49 100.5 100.51-0.01-57-43.49-43.51c170.11-170.1 219.5-219.83 219.5-220.24 0-0.41-12.48-0.75-27.74-0.75h-27.74zm563.99 38.5l0.01 28.5 43.49 43.51c-170.11 170.11-219.5 219.83-219.5 220.24 0 0.42 12.49 0.75 27.75 0.75h27.75l221-221-100.5-100.5zm-508 210.75v27.75l220.99 221 100.5-100.5h-56.67l-43.83 43.5c-170.11-170.11-219.83-219.5-220.24-219.5-0.42 0-0.75 12.49-0.75 27.75zm-53.01-341.5v71.25l41.01-41v-60.5l311.5 0.01-41-41.01h-311.5zm426-50.75l20.5 20.51 60.5-0.01-0.01 311.5 41.02-41-0.01-311.5h-142.5zm-406.5 196.26l-19.98 19.75 0.48 311.49h142.5l-41-41.01-60.5 0.01c0-240.25-0.34-310-0.76-310-0.42 0-9.75 8.89-20.74 19.76zm507.5 209.5l-20.48 20.25 0.48 60.49c-240.25 0-310 0.33-310 0.75-0.01 0.41 8.88 9.63 19.75 20.49l19.75 19.75 311.5 0.01c0-110.05-0.12-142-0.26-142-0.14 0-9.48 9.11-20.74 20.26z"/>
+</svg>&nbsp; Калькулятор матриць</h2>
+      <p>Розрахунок матриці долі за датою народження.</p>
+    </a>
+
+    <a href="https://pushchyna.github.io/matrix_calculator2/" class="card">
+      <h2 style="display: flex;"><svg version="1.2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 774 774" width="24" height="24">
+	<path fill="#a78bfa" id="Path 0" class="s0" d="m336.5 50l-50 50 57-0.01 43.51-43.49c170.1 170.11 219.83 219.5 220.24 219.5 0.41 0 0.75-12.49 0.75-27.75l-0.01-27.75c-170.88-170.89-220.72-220.5-220.99-220.5-0.28 0-23.01 22.5-50.5 50zm-226.49 226.5l-110.51 110.49 100.5 100.51-0.01-57-43.49-43.51c170.11-170.1 219.5-219.83 219.5-220.24 0-0.41-12.48-0.75-27.74-0.75h-27.74zm563.99 38.5l0.01 28.5 43.49 43.51c-170.11 170.11-219.5 219.83-219.5 220.24 0 0.42 12.49 0.75 27.75 0.75h27.75l221-221-100.5-100.5zm-508 210.75v27.75l220.99 221 100.5-100.5h-56.67l-43.83 43.5c-170.11-170.11-219.83-219.5-220.24-219.5-0.42 0-0.75 12.49-0.75 27.75zm-53.01-341.5v71.25l41.01-41v-60.5l311.5 0.01-41-41.01h-311.5zm426-50.75l20.5 20.51 60.5-0.01-0.01 311.5 41.02-41-0.01-311.5h-142.5zm-406.5 196.26l-19.98 19.75 0.48 311.49h142.5l-41-41.01-60.5 0.01c0-240.25-0.34-310-0.76-310-0.42 0-9.75 8.89-20.74 19.76zm507.5 209.5l-20.48 20.25 0.48 60.49c-240.25 0-310 0.33-310 0.75-0.01 0.41 8.88 9.63 19.75 20.49l19.75 19.75 311.5 0.01c0-110.05-0.12-142-0.26-142-0.14 0-9.48 9.11-20.74 20.26z"/>
+</svg>&nbsp; Калькулятор матриць 2</h2>
+      <p>Розрахунок матриці долі за датою народження.</p>
+    </a>
+
+  </div>
+</div>
+
+<footer>
+  © 2026 • Персональна панель доступу
+</footer>
+
+<script>
+function toggleTheme() {
+  document.body.classList.toggle("light");
+  localStorage.setItem("theme", document.body.classList.contains("light") ? "light" : "dark");
+}
+
+if (localStorage.getItem("theme") === "light") {
+  document.body.classList.add("light");
+}
+</script>
+
+</body>
+</html>
